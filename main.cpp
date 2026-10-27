@@ -37,7 +37,7 @@ int main() {
     }
 
     try {
-        FMMKDispersion solver(std::move(points), k);
+        FMMKDispersion solver(points, k);
         const auto ans = solver.solve();
 
         if (!ans.feasible) {
@@ -52,8 +52,10 @@ int main() {
         std::cout << '\n';
 
         std::cout << "selected_points\n";
-        // The solver owns the points internally, so for this simple driver
-        // the indices are the canonical result. Print indices only here.
+        for (int v : ans.selected) {
+            for (int j = 0; j < d; ++j) std::cout << (j ? " " : "") << points[v].x[j];
+            std::cout << '\n';
+        }
     } catch (const std::exception& e) {
         std::cerr << "error: " << e.what() << '\n';
         return 1;

@@ -12,6 +12,14 @@ struct Point {
     std::vector<std::int64_t> x;
 };
 
+// Sizes of the cliques in the three parts of the auxiliary graph.
+// P = M12 * M23 is an n^k1 x n^k2 by n^k2 x n^k3 product.
+struct CliqueSplit {
+    int k1, k2, k3;
+};
+
+CliqueSplit clique_split(int k);
+
 struct DispersionResult {
     bool feasible = false;
     unsigned __int128 squared_distance = 0;

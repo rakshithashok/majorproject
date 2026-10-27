@@ -78,17 +78,37 @@ ThresholdGraph FMMKDispersion::build_graph(unsigned __int128 r2) const {
     return G;
 }
 
+CliqueSplit clique_split(int k) {
+    // Section 3 / proof of Theorem 2 (Chen–Dumitrescu): for 2 <= k <= 8 the
+    // running time O(n^e(k)) comes from one specific Eisenbrand–Grandoni
+    // rectangular product n^k1 x n^k2 times n^k2 x n^k3, i.e. e(k)=w(k1,k2,k3):
+    //   e(4) = w(1,1,2)
+    //   e(5) = w(2,1,2)
+    //   e(6) = w(2,2,2)  = 2w
+    //   e(7) = w(2,3,2)
+    //   e(8) = w(2,2,4)  = 2w(1,1,2)
+    // k = 2, 3 are the trivial splits (0,1,1) and (1,1,1). The paper gives no
+    // instantiation for k >= 9; there we use the balanced split
+    // floor(k/3), ceil((k-1)/3), ceil(k/3).
+    switch (k) {
+        case 2: return {0, 1, 1};
+        case 3: return {1, 1, 1};
+        case 4: return {1, 1, 2};
+        case 5: return {2, 1, 2};
+        case 6: return {2, 2, 2};
+        case 7: return {2, 3, 2};
+        case 8: return {2, 2, 4};
+        default: return {k / 3, (k + 1) / 3, (k + 2) / 3};
+    }
+}
+
 FMMKDispersion::FeasibleResult FMMKDispersion::fmm_clique(const ThresholdGraph& G) const {
-    // Exactly the Nešetřil–Poljak / Eisenbrand–Grandoni triangle reduction
-    // described in Section 3 of the paper:
-    //
-    // k1=floor(k/3), k2=ceil((k-1)/3), k3=ceil(k/3).
+    // Nešetřil–Poljak / Eisenbrand–Grandoni triangle reduction, with the
+    // split (k1,k2,k3), k1+k2+k3 = k, chosen as in the paper (clique_split).
     // Vi contains all ki-cliques of G.
     // Two clique-nodes are adjacent iff their union is a clique.
     // G contains Kk iff the auxiliary 3-partite graph contains a triangle.
-    const int k1 = k_ / 3;
-    const int k2 = (k_ + 1) / 3; // ceil((k-1)/3)
-    const int k3 = (k_ + 2) / 3; // ceil(k/3)
+    const auto [k1, k2, k3] = clique_split(k_);
 
     const auto V1 = enumerate_cliques(G, k1);
     const auto V2 = enumerate_cliques(G, k2);
